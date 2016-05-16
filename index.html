@@ -1,0 +1,222 @@
+<html>
+<head>
+    <title>API Browser</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script>
+        var apis = [
+    { "apiname": "youtube", "apiurl": "https://www.googleapis.com/youtube/v3/search?part=snippet&q=", "apikey": "key=AIzaSyCiEVwKarRf8rPHDtkP-kpp0NCtac9R_l4" },
+    { "apiname": "lastfm", "apiurl": "http://ws.audioscrobbler.com/2.0/?method=tag.gettopartists&format=json&tag=", "apikey": "api_key=5c732893c5d277f98816d81285d37cdf" }
+        ];
+        $(function () {
+            changebg();
+            $('.mi-changebg').click(changebg);
+            $(".inp").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    run();
+                }
+            });
+            $('.fa-play').click(function() {
+                $('.x').html("<ul>" + itms.join("") + "</ul>");
+            });
+        });
+        function changebg() {
+            $('body').css({ 'background': 'url(http://cdn-media-1.lifehack.org/wp-content/files/2013/04/' + Math.floor(Math.random() * 100) + '.jpg) no-repeat center center fixed' });
+        }
+
+        function run() {
+            var out = 'init';
+            for (var i = 0; i < apis.length; i++) {
+                if ($('.inp').val().indexOf(apis[i].apiname) >= 0) {
+                    out = searchApi(apis[i]);
+                }
+            }
+            $('.x').html(out);
+        }
+        function searchApi(api) {
+            var inp = $('.inp').val();
+            if (inp.indexOf(api.apiname) >= 0)
+                return api.apiurl + inp.replace(api.apiname, '').trim() + '&' + api.apikey + ": " + parseJsonUrl(api.apiurl + inp.replace(api.apiname, '').trim() + '&' + api.apikey);
+            else
+                return 'no api match yet';
+        }
+
+        var dta = [];
+        var itms = [];
+        function parseJsonUrl(jsonUrl) {
+            itms = [];
+            try {
+                $.getJSON(jsonUrl, function(data) {
+                    dta = data;
+                    //$.each(data.items, function (key, val) {
+                    //    //itms.push("<li id='" + key + "'>" + val + "</li>");
+                    //    //itms.push(key.snippet);
+                    //    $.each(key.items, function(key, val) {
+                    //        itms.push("<li id='" + key + "'>" + val + "</li>");
+                    //    });
+                    //});
+                    traverse(data);
+                });
+                return itms.join("");
+            } catch (ex) {
+                return "error";
+            }
+        }
+        function traverse(jsonObj) {
+            if (typeof jsonObj == "object") {
+                $.each(jsonObj, function (k, v) {
+                    // k is either an array index or object key
+                    if (v.hasChildNodes) {
+                        itms.push("<li>" + k + "</li><ul>");
+                        traverse(v);
+                        itms.push("</ul>");
+                    }
+                });
+            }
+            else {
+                // jsonOb is a number or string
+                //itms.push(jsonObj);
+               itms.push("<li>" + jsonObj + "</li>");
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+    <style>
+        html {
+            font: 2vh apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Open Sans", "Helvetica Neue", sans-serif;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+
+        body, nav ul, nav, input {
+            margin: 0;
+            padding: 0;
+        }
+
+        .inp {
+            display: inline-block;
+            margin: .6vw;
+            padding: .6vw;
+            width: 90vw;
+            line-height: 2em;
+            font: inherit;
+        }
+
+        nav {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+            nav i {
+                font-size: 1.6vw !important;
+            }
+
+            nav ul ul {
+                display: none;
+            }
+
+            nav ul li:hover > ul {
+                display: block;
+            }
+
+            nav ul {
+                list-style: none;
+                position: relative;
+                display: inline-table;
+            }
+
+                nav ul:after {
+                    content: "";
+                    clear: both;
+                    display: block;
+                }
+
+                nav ul li {
+                    float: left;
+                }
+
+                    nav ul li:hover {
+                        background: rgba(33, 33, 33, 0.8);
+                    }
+
+                        nav ul li:hover a {
+                            color: #fff;
+                        }
+
+                    nav ul li a {
+                        display: block;
+                        color: #fff;
+                        text-decoration: none;
+                        font: inherit;
+                        margin: 0;
+                        padding: .6em;
+                    }
+
+
+                nav ul ul {
+                    background: rgba(33, 33, 33, 0.8);
+                    position: absolute;
+                    top: 100%;
+                    right: 0;
+                }
+
+                    nav ul ul li {
+                        float: none;
+                        border-top: 1px solid #333;
+                        border-bottom: 1px solid #333;
+                        position: relative;
+                    }
+
+                        nav ul ul li a {
+                            padding: 6px 12px;
+                            color: #fff;
+                        }
+
+                            nav ul ul li a:hover {
+                                background: #4b545f;
+                            }
+
+                    nav ul ul ul {
+                        position: absolute;
+                        left: 100%;
+                        top: 0;
+                    }
+
+        .x {
+            background: #fff;
+            opacity: .9;
+            color: #666;
+            font: 2vh apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Open Sans", "Helvetica Neue", sans-serif;
+            width: 96%;
+            margin: 1vh 1vw;
+            padding: 1vh 1vw;
+            overflow: hidden;
+            word-wrap: break-word;
+            border-radius: .2em;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <input type="text" placeholder="try Product Sales 2016 or Customers From NY" class="inp" />
+        <ul>
+            <li>
+                <a href="#"><i class="fa fa-play"></i></a>
+            </li>
+            <li>
+                <a href="#"><i class="fa fa-user"></i></a>
+                <ul>
+                    <li><a href="#" class="mi-login">welcome, stranger!</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#"><i class="fa fa-bars"></i></a>
+                <ul>
+                    <li><a href="#" class="mi-changebg">change background</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div class="x"></div>
+</body>
+</html>
